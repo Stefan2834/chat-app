@@ -11,6 +11,7 @@ const socket = io(process.env.NEXT_PUBLIC_SERVER, {
   transports: ['websocket']
 });
 
+
 export default function index({ messages }) {
   const { data: session } = useSession()
   const [messageData, setMessageData] = useState('')
