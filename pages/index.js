@@ -12,7 +12,7 @@ const socket = io(process.env.NEXT_PUBLIC_SERVER, {
 });
 
 
-export default function index({ messages }) {
+export default function Index({ messages }) {
   const { data: session } = useSession()
   const [messageData, setMessageData] = useState('')
   const [messagesState, setMessagesState] = useState(messages)
