@@ -71,13 +71,7 @@ export default function index({ messages }) {
   useEffect(() => {
     const cont = containerScrollRef.current
     if (cont) {
-      console.log(containerScrollRef.current.scrollTop + containerScrollRef.current.clientHeight, containerScrollRef.current.scrollHeight)
-      let lastMessage = messagesState[messagesState.length - 1];
-      if (lastMessage.email === session?.user.email) {
-        cont.scrollTop = cont.scrollHeight
-      } else if (cont.scrollTop + cont.clientHeight >= cont.scrollHeight - 150) {
-        cont.scrollTop = cont.scrollHeight
-      }
+      cont.scrollTop = cont.scrollHeight
     }
   }, [messagesState])
 
