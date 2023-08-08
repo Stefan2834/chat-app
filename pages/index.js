@@ -114,7 +114,7 @@ export default function Index({ messages }) {
               {messagesState.map((mess, index) => {
                 if (mess.email === session.user.email) {
                   return (
-                    <div className="flex justify-end w-full items-center m-3">
+                    <div className="flex justify-end w-full items-center m-3" key={index}>
                       <div className="flex flex-col items-end justify-end m-2">
                         <div className="flex items-center justify-center">
                           <div className="font-extralight text-xs overflow-hidden">{mess.time}</div>
@@ -127,7 +127,7 @@ export default function Index({ messages }) {
                   )
                 } else {
                   return (
-                    <div className="flex justify-start w-full items-center m-3" >
+                    <div className="flex justify-start w-full items-center m-3" key={index}>
                       <Avatar className="rounded-full ml-2 shadow-sm" src={mess.photo} width={35} height={35} alt='Profile picture' />
                       <div className="flex flex-col items-start justify-end m-2">
                         <div className="flex items-center justify-center">
