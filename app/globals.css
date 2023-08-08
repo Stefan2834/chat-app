@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  background: linear-gradient(90deg, rgb(211, 239, 255), rgb(76, 174, 255))
+}
+html {
+  scroll-behavior: smooth;
+}
+.scroll-container {
+  height:calc(100vh - 128px)
+}
