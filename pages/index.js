@@ -26,8 +26,12 @@ export default function Index({ messages, more }) {
     containerScrollRef.current.addEventListener("scroll", handleInfiniteScroll)
     containerScrollRef.current.scrollTop = containerScrollRef.current.scrollHeight
   }, []);
+
   const handleInfiniteScroll = () => {
     const element = containerScrollRef.current
+    if(element.scrollHeight + 1 <= element.clientHeight - element.scrollTop) {
+      element.scrollTop = - element.scrollHeight + element.clientHeight 
+    }
     if (element.scrollHeight === element.clientHeight - element.scrollTop && !loading && hasMoreMessages.current) {
       setLoading(true);
       axios.post(`${process.env.NEXT_PUBLIC_SERVER}/`, { currentLength: messagesLengthRef.current })
@@ -138,9 +142,15 @@ export default function Index({ messages, more }) {
                   )
                 }
               })}
-              {hasMoreMessages.current && (
-                <div className="w-full h-20 opacity-70 flex items-center justify-center">
+              {hasMoreMessages.current ? (
+                <div className="w-full h-16 opacity-70 flex items-center justify-center">
                   <CircularProgress />
+                </div>
+              ) : (
+                <div className="w-full h-20 bg-blue-400 flex flex-col items-center justify-center font-semibold text-center">
+                  <span className="my-1">Chat-app versiunea beta</span>
+                  <span className="my-1">Trimiți și primești mesaje în timp real</span>
+                  <span className="my-1">Versiunea full disbonibilă în curând</span>
                 </div>
               )}
             </div>
