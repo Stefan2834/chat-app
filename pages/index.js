@@ -12,28 +12,29 @@ const socket = io(process.env.NEXT_PUBLIC_SERVER, {
 });
 
 
-export default function Index({ messages }) {
+export default function Index({ messages, more }) {
   const { data: session } = useSession()
   const [messageData, setMessageData] = useState('')
   const [messagesState, setMessagesState] = useState(messages)
   const [loading, setLoading] = useState(false)
   const containerScrollRef = useRef()
   const messagesLengthRef = useRef(messages.length)
+  const hasMoreMessages = useRef(more)
 
   const containerScrollCallback = useCallback(node => {
     containerScrollRef.current = node;
     containerScrollRef.current.addEventListener("scroll", handleInfiniteScroll)
     containerScrollRef.current.scrollTop = containerScrollRef.current.scrollHeight
   }, []);
-
   const handleInfiniteScroll = () => {
     const element = containerScrollRef.current
-    if (element.scrollHeight === element.clientHeight - element.scrollTop && !loading) {
+    if (element.scrollHeight === element.clientHeight - element.scrollTop && !loading && hasMoreMessages.current) {
       setLoading(true);
       axios.post(`${process.env.NEXT_PUBLIC_SERVER}/`, { currentLength: messagesLengthRef.current })
         .then((newMessages) => {
           if (newMessages.data.success) {
             setMessagesState(m => [...m, ...newMessages.data.messages]);
+            hasMoreMessages.current = newMessages.data.hasMoreMessages
           }
         })
         .catch((err) => {
@@ -101,8 +102,8 @@ export default function Index({ messages }) {
       <div className="flex w-screen h-screen justify-center items-start relative">
         <div className="max-w-[700px] w-full relative">
           <div className="w-full max-w-[700px] h-16 bg-slate-300 font-semibold flex items-center justify-evenly z-10 fixed shadow-md">
-            {/* <div>{session.user.email}</div>
-            <Button variant='outlined' onClick={() => signOut()}>Sign out</Button> */}
+            <div>{session.user.email}</div>
+            <Button variant='outlined' onClick={() => signOut()}>Sign out</Button>
           </div>
           <div className="w-full flex flex-col-reverse items-end justify-start bg-gradient-to-br from-slate-200  to-blue-200 overflow-scroll overflow-x-hidden scroll-container mt-16"
             ref={containerScrollCallback}
@@ -137,7 +138,11 @@ export default function Index({ messages }) {
                   )
                 }
               })}
-              <div className="w-full h-10 bg-red-600 flex items-center justify-center">LOADING...</div>
+              {hasMoreMessages.current && (
+                <div className="w-full h-20 opacity-70 flex items-center justify-center">
+                  <CircularProgress />
+                </div>
+              )}
             </div>
           </div>
           <form onSubmit={e => { !loading ? handleFormSubmit(e) : e.preventDefault() }}
@@ -198,15 +203,18 @@ export async function getServerSideProps() {
     const response = await axios.post(`${server}/`, { currentLength: 0 });
     if (response.data.success) {
       const messages = response.data.messages;
+      const more = response.data.hasMoreMessages
       return {
         props: {
           messages: messages,
+          more: more
         },
       };
     } else {
       return {
         props: {
-          messages: []
+          messages: [],
+          more: false
         }
       }
     }
@@ -215,6 +223,7 @@ export async function getServerSideProps() {
     return {
       props: {
         messages: [],
+        more: false
       },
     };
   }
