@@ -29,10 +29,10 @@ export default function Index({ messages, more }) {
 
   const handleInfiniteScroll = () => {
     const element = containerScrollRef.current
-    if(element.scrollHeight - 50 <= element.clientHeight - element.scrollTop && hasMoreMessages.current) {
-      element.scrollTop = - element.scrollHeight + element.clientHeight 
+    if(element.scrollHeight - 50 <= Math.round(element.clientHeight - element.scrollTop) && hasMoreMessages.current) {
+      element.scrollTop = Math.round(- element.scrollHeight + element.clientHeight) 
     }
-    if (element.scrollHeight === element.clientHeight - element.scrollTop && !loading && hasMoreMessages.current) {
+    if (element.scrollHeight === Math.round(element.clientHeight - element.scrollTop) && !loading && hasMoreMessages.current) {
       setLoading(true);
       axios.post(`${process.env.NEXT_PUBLIC_SERVER}/`, { currentLength: messagesLengthRef.current })
         .then((newMessages) => {
