@@ -29,7 +29,7 @@ export default function Index({ messages, more }) {
 
   const handleInfiniteScroll = () => {
     const element = containerScrollRef.current
-    if(element.scrollHeight - 1 <= element.clientHeight - element.scrollTop) {
+    if(element.scrollHeight - 50 <= element.clientHeight - element.scrollTop && hasMoreMessages.current) {
       element.scrollTop = - element.scrollHeight + element.clientHeight 
     }
     if (element.scrollHeight === element.clientHeight - element.scrollTop && !loading && hasMoreMessages.current) {
@@ -147,7 +147,7 @@ export default function Index({ messages, more }) {
                   <CircularProgress />
                 </div>
               ) : (
-                <div className="w-full h-20 bg-blue-400 flex flex-col items-center justify-center font-semibold text-center">
+                <div className="w-full bg-blue-400 flex flex-col items-center justify-center font-semibold text-center">
                   <span className="my-1">Chat-app versiunea beta</span>
                   <span className="my-1">Trimiți și primești mesaje în timp real</span>
                   <span className="my-1">Versiunea full disbonibilă în curând</span>

@@ -10,9 +10,7 @@ body {
   font-weight: 500;
   background: linear-gradient(90deg, rgb(211, 239, 255), rgb(76, 174, 255))
 }
-html {
-  scroll-behavior: smooth;
-}
 .scroll-container {
+  scroll-behavior: smooth;
   height:calc(100vh - 128px)
 }
