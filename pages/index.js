@@ -29,7 +29,7 @@ export default function Index({ messages, more }) {
 
   const handleInfiniteScroll = () => {
     const element = containerScrollRef.current
-    if(element.scrollHeight + 1 <= element.clientHeight - element.scrollTop) {
+    if(element.scrollHeight - 1 <= element.clientHeight - element.scrollTop) {
       element.scrollTop = - element.scrollHeight + element.clientHeight 
     }
     if (element.scrollHeight === element.clientHeight - element.scrollTop && !loading && hasMoreMessages.current) {
