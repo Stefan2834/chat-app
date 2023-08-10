@@ -17,8 +17,8 @@ export default function Index({ messages }) {
   const [messageData, setMessageData] = useState('')
   const [messagesState, setMessagesState] = useState(messages)
   const [loading, setLoading] = useState(false)
-  const pageRef = useRef(1)
   const containerScrollRef = useRef()
+  const messagesLengthRef = useRef(messages.length)
 
   const containerScrollCallback = useCallback(node => {
     containerScrollRef.current = node;
@@ -27,28 +27,27 @@ export default function Index({ messages }) {
   }, []);
 
   const handleInfiniteScroll = () => {
-    console.log(containerScrollRef.current.scrollTop + containerScrollRef.current.clientHeight, containerScrollRef.current.scrollHeight)
-    if (containerScrollRef.current.scrollTop === 0 && !loading) {
-      const scrollPx = containerScrollRef.current.scrollHeight;
+    const element = containerScrollRef.current
+    if (element.scrollHeight === element.clientHeight - element.scrollTop && !loading) {
       setLoading(true);
-      const page = pageRef.current;
-      axios.post(`${process.env.NEXT_PUBLIC_SERVER}/`, { page: page + 1 })
+      axios.post(`${process.env.NEXT_PUBLIC_SERVER}/`, { currentLength: messagesLengthRef.current })
         .then((newMessages) => {
           if (newMessages.data.success) {
-            setMessagesState(m => [...newMessages.data.messages, ...m]);
-            containerScrollRef.current.scrollTop = scrollPx
+            setMessagesState(m => [...m, ...newMessages.data.messages]);
           }
         })
         .catch((err) => {
-          console.log(err);
+          console.error(err);
         })
         .finally(() => {
-          pageRef.current += 1
           setLoading(false);
         });
     }
   };
 
+  useEffect(() => {
+    messagesLengthRef.current = messagesState.length
+  }, [messagesState])
 
 
   useEffect(() => {
@@ -56,7 +55,12 @@ export default function Index({ messages }) {
 
     socket.on('message', async (data) => {
       if (data.success) {
-        setMessagesState((prevMessages) => [...prevMessages, data.message]);
+        setMessagesState((prevMessages) => [data.message, ...prevMessages])
+        setTimeout(() => {
+          if (containerScrollRef.current) {
+            containerScrollRef.current.scrollTop = containerScrollRef.current.scrollHeight;
+          }
+        }, 0);
       } else {
         console.log('Error receiving new message:', data.message);
       }
@@ -68,12 +72,6 @@ export default function Index({ messages }) {
     };
   }, [])
 
-  useEffect(() => {
-    const cont = containerScrollRef.current
-    if (cont) {
-      cont.scrollTop = cont.scrollHeight
-    }
-  }, [messagesState])
 
   const handleFormSubmit = async e => {
     setLoading(true)
@@ -94,23 +92,22 @@ export default function Index({ messages }) {
     }
     socket.emit('message', message);
     setMessageData('')
-    containerScrollRef.current.scrollTop = containerScrollRef.current.scrollHeight + 10000
+    containerScrollRef.current.scrollTop = containerScrollRef.current.scrollHeight
     setLoading(false)
   }
-
 
   if (session) {
     return (
       <div className="flex w-screen h-screen justify-center items-start relative">
         <div className="max-w-[700px] w-full relative">
           <div className="w-full max-w-[700px] h-16 bg-slate-300 font-semibold flex items-center justify-evenly z-10 fixed shadow-md">
-            <div>{session.user.email}</div>
-            <Button variant='outlined' onClick={() => signOut()}>Sign out</Button>
+            {/* <div>{session.user.email}</div>
+            <Button variant='outlined' onClick={() => signOut()}>Sign out</Button> */}
           </div>
-          <div className="w-full bg-gradient-to-br from-slate-200 to-blue-200 overflow-scroll overflow-x-hidden scroll-container mt-16"
+          <div className="w-full flex flex-col-reverse items-end justify-start bg-gradient-to-br from-slate-200  to-blue-200 overflow-scroll overflow-x-hidden scroll-container mt-16"
             ref={containerScrollCallback}
           >
-            <div className="h-auto flex flex-col items-center justify-center">
+            <div className="h-auto w-full flex flex-col-reverse items-center justify-center">
               {messagesState.map((mess, index) => {
                 if (mess.email === session.user.email) {
                   return (
@@ -140,6 +137,7 @@ export default function Index({ messages }) {
                   )
                 }
               })}
+              <div className="w-full h-10 bg-red-600 flex items-center justify-center">LOADING...</div>
             </div>
           </div>
           <form onSubmit={e => { !loading ? handleFormSubmit(e) : e.preventDefault() }}
@@ -197,7 +195,7 @@ export default function Index({ messages }) {
 export async function getServerSideProps() {
   try {
     const server = process.env.NEXT_PUBLIC_SERVER
-    const response = await axios.post(`${server}/`, { page: 1 });
+    const response = await axios.post(`${server}/`, { currentLength: 0 });
     if (response.data.success) {
       const messages = response.data.messages;
       return {
